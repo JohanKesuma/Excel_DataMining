@@ -5,21 +5,13 @@
  */
 package view;
 
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import model.TableData;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import util.FileUtil;
 
 /**
  *
@@ -130,6 +122,8 @@ public class MainFrame extends javax.swing.JFrame {
     private void menuItemOpenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemOpenActionPerformed
 
         DefaultTableModel tableModel = new DefaultTableModel();
+        
+        
 
         // Open File
         JFileChooser jFileChooser = new JFileChooser();
@@ -139,24 +133,32 @@ public class MainFrame extends javax.swing.JFrame {
         jFileChooser.setFileFilter(filter);
 
         if (jFileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            tableData = new TableData(jFileChooser.getSelectedFile());
+            
+            // buat workbook
+            Workbook workbook = TableData.getWorkbook(jFileChooser.getSelectedFile());
+            
+            // pilih sheet
+            String[] sheets = new String[workbook.getNumberOfSheets()];
+            for (int i = 0; i < sheets.length; i++) {
+                sheets[i] = workbook.getSheetAt(i).getSheetName();
+            }
+            
+            JFrame frame = new JFrame("Select Sheet");
+            String selectedSheet = (String) JOptionPane.showInputDialog(frame, "Select Sheet", "...", JOptionPane.PLAIN_MESSAGE, null, sheets, sheets[0]);
+            System.out.println(selectedSheet);
+            int index = 0;
+            for (int i = 0; i < sheets.length; i++) {
+                if (sheets[i].equalsIgnoreCase(selectedSheet)) {
+                    index = i;
+                    break;
+                }
+            }
+            // end pilih sheet
+            
+            // buat tabel
+            tableData = new TableData(workbook, index);
             mainTable.setModel(tableData.getTableModel());
-//            // extensi file
-//            String fileExtension = FileUtil.getFileExtension(jFileChooser.getSelectedFile());
-//            FileInputStream fis;
-//            try {
-//                fis = new FileInputStream(jFileChooser.getSelectedFile());
-//                Workbook workbook = new HSSFWorkbook(fis);
-//                Sheet firstSheet = workbook.getSheetAt(0);
-//                System.out.println(firstSheet.getRow(0).getCell(0).getStringCellValue());
-//                
-//                TableData data = new TableData(jFileChooser.getSelectedFile());
-//            } catch (FileNotFoundException ex) {
-//                Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
-//            } catch (IOException ex) {
-//                Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
-//            }
-
+            //
         }
 
     }//GEN-LAST:event_menuItemOpenActionPerformed
